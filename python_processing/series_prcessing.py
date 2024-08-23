@@ -1,6 +1,7 @@
 import json
 import sys
 from config import Config, IsoDow
+from enums import Files
 from common import json_date_to_datetime, backup_series
 from pathlib import Path
 from collector_json import (get_route_info, get_event_results, get_challenges,
@@ -55,7 +56,7 @@ def get_races() -> list:
     Loads and returns the race list.
     :return: Race list
     """
-    race_file: Path = Path(Config.series.series_path, 'races.json')
+    race_file: Path = Path(Config.series.series_path, Files.JSON_RACES.value)
     return json.load(race_file.open(mode='r', encoding='utf-8'))
 
 
@@ -75,7 +76,7 @@ def init_races():
             continue
         race_path = Path(race['path'])
         race_path.mkdir(exist_ok=True)
-        route_file = Path(race_path, 'route.json')
+        route_file = Path(race_path, Files.JSON_ROUTE.value)
         if route_file.exists():
             # print(f'[-] {race["name"]} already initialised')
             pass
@@ -90,7 +91,7 @@ def init_series():
     Initialise and extend / update races.json as required based on .series.env
     """
     races: list = __generate_races()
-    race_file: Path = Path(Config.series.series_path, 'races.json')
+    race_file: Path = Path(Config.series.series_path, Files.JSON_RACES.value)
     if not race_file.exists():
         # All new just dump out the generated race schedule
         json.dump(races, open(race_file, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
@@ -265,7 +266,7 @@ def __combine_everything_for_jinja_template(day_filter: IsoDow = IsoDow.ALL, mon
                 continue
         year = datetime.fromisoformat(race['date']).year
         # Add route info
-        route_file: Path = Path(race['path'], 'route.json')
+        route_file: Path = Path(race['path'], Files.JSON_ROUTE.value)
         route: dict = json.load(open(route_file, 'r', encoding='utf-8'))
         race['route'] = route['route']
 
@@ -533,7 +534,7 @@ def update_races_with_challenge():
                 print(f'New Challenge found for race [{race["name"]}] route {route} - {challenge["title"]}')
                 race['challenge'] = challenge
     if updated:
-        series_file = Path(Config.series.series_path, 'races.json')
+        series_file = Path(Config.series.series_path, Files.JSON_RACES.value)
         json.dump(races, open(series_file, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
 
