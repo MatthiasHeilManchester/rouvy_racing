@@ -21,7 +21,7 @@ This is still a work in progress, I don't recommend anyone actually uses it
 def post_race_to_rouvy(route_id: int, race_date: datetime, offset_minutes: int, race_name: str,
                        laps: int = 1, test_mode: bool = False) -> bool:
     """
-    Does the post to ctrate an event, has a test mote that just prints the JSON
+    Does the post to create an event, has a test mode that just prints the JSON
     :param route_id:
     :param race_date:
     :param offset_minutes:
@@ -46,27 +46,35 @@ def post_race_to_rouvy(route_id: int, race_date: datetime, offset_minutes: int, 
     """
 
     payload = {
-        'routeId': route_id,
-        'title': race_name,
-        'lapsCount': laps,
         'type': 'RACE',
+        'title': race_name,
         'dateTimeLocal': race_date.strftime('%Y-%m-%dT%H:%M'),
         'dateTimeOffset': offset_minutes,
-        'isMultilap': (laps != 1),
+        'accessibility': 'PUBLIC',
         'smartTrainersOnly': 'on',
-        'accessibility': 'PUBLIC'
-    }
+        'routeId': route_id}
+    if laps > 1:  # IDK if the order in important, but this it the way the site does it
+        payload.pop('routeId')
+        payload['isMultilap'] = 'on'
+        payload['lapsCount'] = laps
+        payload['routeId'] = route_id
 
-    if test_mode:
-        print(json.dumps(payload, indent=2))
-        return True
-    else:
-        url = 'https://riders.rouvy.com/events/setup'
+    print(json.dumps(payload, indent=2))
+    if not test_mode:
+        print('[+] Creating event')
+        url = f'https://riders.rouvy.com/events/setup?route={route_id}&_data=routes/_main.events_.setup.($sessionId)'
         response = nice_request(url=url, method=HTTPMethod.POST, payload=payload)
-        return response.status_code == HTTPStatus.OK
+        # print(response.request.body)
+        if response.status_code in [HTTPStatus.OK, HTTPStatus.NO_CONTENT]:
+            print('[*] Event created')
+            return True
+        else:
+            return False
+    else:
+        return True
 
 
-def create_race(race_number: int):
+def create_race(race_number: int, test_mode: bool = False):
     if race_number > Config.series.length or race_number < 1:
         print(f"[X] Sorry, race number {race_number} is not valid")
         return
@@ -87,9 +95,31 @@ def create_race(race_number: int):
                            offset_minutes=utc_offset,
                            race_name=f"rvy_racing race {race['number']} {chr(ord('A') + i)}",
                            laps=lap_count,
-                           test_mode=True)
+                           test_mode=test_mode)
         i += 1
 
 
 if __name__ == '__main__':
-    create_race(13)
+    # Create a set of races based on the config...
+    # create_race(13, test_mode=True)
+
+    # Or
+
+    ################################################################
+    # Create a single race
+    ################################################################
+    race_name = 'Test Race 🦄'
+    race_date: datetime = datetime.fromisoformat('2024-09-24T07:00')
+    route_id = 66132
+    laps = 1
+    test_mode = False
+    ################################################################
+
+    tz = Config.series.official_race_timezone
+    utc_offset = -1 * int(tz.utcoffset(race_date).total_seconds() / 60)
+    result = post_race_to_rouvy(route_id=route_id,
+                                race_date=race_date,
+                                offset_minutes=utc_offset,
+                                race_name=race_name,
+                                laps=laps,
+                                test_mode=test_mode)
