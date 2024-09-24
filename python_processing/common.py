@@ -23,6 +23,7 @@ def nice_request(url: str, method: HTTPMethod = HTTPMethod.GET, payload=None) ->
     :param payload: The payload to send to the url
     :return: A Response object
     """
+    okay_enough:list = [HTTPStatus.OK, HTTPStatus.ACCEPTED, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT]
     global __last_request_time
     sleep_time: float = max(0.0, Constants.REQUEST_RATE_LIMIT -
                             (datetime.utcnow() - __last_request_time).total_seconds())
@@ -31,7 +32,9 @@ def nice_request(url: str, method: HTTPMethod = HTTPMethod.GET, payload=None) ->
     status_code = HTTPStatus.IM_A_TEAPOT  # Python 3.9
     for retry in range(0, Constants.REQUEST_RETRY_LIMIT + 1):
         if retry > 0:
-            print(f'[?] Request failed with status {status_code} attempting retry {retry}')
+            print(f'[?] Request failed with status {status_code} {response.reason} attempting retry {retry}')
+            print(f'    Request body {response.request.body}')
+            print(f'    Response raw {response.text}')
             sleep(Constants.REQUEST_RETRY_DELAY * retry)
         session: Session = get_authenticated_session()
         if method == HTTPMethod.GET:
@@ -42,11 +45,13 @@ def nice_request(url: str, method: HTTPMethod = HTTPMethod.GET, payload=None) ->
             raise NotImplementedError(f'Method {method} not implemented')
         __last_request_time = datetime.utcnow()
         status_code: int = response.status_code
-        if status_code == HTTPStatus.OK:
+        if status_code in okay_enough:
             break
 
-    if status_code != HTTPStatus.OK:
-        print(f'[X] Request failed with status {status_code}')
+    if status_code not in okay_enough:
+        print(f'[X] Request failed with status {status_code} {response.reason}')
+        print(f'    Request body {response.request.body}')
+        print(f'    Response raw {response.text}')
         exit(1)
 
     return response
