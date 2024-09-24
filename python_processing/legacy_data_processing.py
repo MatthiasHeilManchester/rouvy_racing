@@ -97,7 +97,7 @@ def get_race_results(race: str):
     # Get the result_table, currently only one table on the page / it is the first table
     rt = soup.find("table")
     result_data = parse_result_table(race, rt)
-    agg_file = f"../master_race_data/rvy_racing-2024-05/{race}/leaderboard.json"
+    agg_file = f"../master_race_data/rvy_racing-2024-05/{race}/{Files.JSON_RACE_LEADERBOARD.value}"
     with open(agg_file, 'w', encoding='utf-8') as f:
         json.dump(result_data, f, ensure_ascii=False, indent=2)
 

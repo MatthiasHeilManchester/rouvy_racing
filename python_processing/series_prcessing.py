@@ -125,7 +125,7 @@ def init_series():
 def refresh_known_events(race_number: int) -> None:
     race = get_races()[race_number -1]
     race_path: Path = Path(race['path'])
-    events_file: Path = Path(race_path, f'events.json')
+    events_file: Path = Path(race_path, Files.JSON_EVENTS.value)
     events: list = json.load(open(events_file, 'r', encoding='utf-8'))
     updated_events: list = list()
     for event in events:
@@ -142,7 +142,7 @@ def update_head_to_head_data():
     """
     Collects data for the head-to-head module
     """
-    lb_path: Path = Path(Config.series.series_path, 'series_leaderboard.json')
+    lb_path: Path = Path(Config.series.series_path, Files.JSON_SERIES_LEADERBOARD.value)
     lb: list = json.load(open(lb_path, 'r', encoding='utf-8'))
     user_list = list()
     user: dict
@@ -155,7 +155,7 @@ def update_head_to_head_data():
     race_list: list = list()
     race: dict
     for race in get_races():
-        race_lb_path: Path = Path(race['path'], 'leaderboard.json')
+        race_lb_path: Path = Path(race['path'], Files.JSON_RACE_LEADERBOARD.value)
         if not race_lb_path.exists():
             continue
         race_lb: list = json.load(open(race_lb_path, 'r', encoding='utf-8'))
@@ -186,8 +186,8 @@ def collect_event_data(race_number: int):
         return
     race_path: Path = Path(race['path'])
     race_path.mkdir(exist_ok=True)  # should already exist but you never know
-    event_file: Path = Path(race_path, f'events.json')
-    results_file: Path= Path(race_path, f'results.json')
+    event_file: Path = Path(race_path, Files.JSON_EVENTS.value)
+    results_file: Path= Path(race_path, Files.JSON_RESULTS.value)
     if results_file.exists():
         print(f'[-] Race {race["name"]} complete and results already collected')
         return
@@ -271,7 +271,7 @@ def __combine_everything_for_jinja_template(day_filter: IsoDow = IsoDow.ALL, mon
         race['route'] = route['route']
 
         # Add event info
-        events_file: Path = Path(race['path'], 'events.json')
+        events_file: Path = Path(race['path'], Files.JSON_EVENTS.value)
         if events_file.exists():
             events = sorted(json.load(open(events_file, 'r', encoding='utf-8')), key=lambda _: _['startDateTime'])
         else:
@@ -287,7 +287,7 @@ def __combine_everything_for_jinja_template(day_filter: IsoDow = IsoDow.ALL, mon
         race['user_contribute_events'] = user_contribute_events
 
         # Add race leaderboard
-        leaderboard_file = Path(race['path'], f'leaderboard.json')
+        leaderboard_file = Path(race['path'], Files.JSON_RACE_LEADERBOARD.value)
         if leaderboard_file.exists():
             race['processed'] = True
             results = json.load(open(leaderboard_file, 'r', encoding='utf-8'))
@@ -301,7 +301,7 @@ def __combine_everything_for_jinja_template(day_filter: IsoDow = IsoDow.ALL, mon
         series_leaderboard_file = Path(Config.series.series_path,
                                        f'series_watt_monster_{year}_{month_filter.value:02}_{month_filter}.json')
     else:
-        series_leaderboard_file = Path(Config.series.series_path, 'series_leaderboard.json')
+        series_leaderboard_file = Path(Config.series.series_path, Files.JSON_SERIES_LEADERBOARD.value)
 
     series_leaderboard = list()
     if series_leaderboard_file.exists():
@@ -361,12 +361,14 @@ def create_race_leaderboard(race_number: int):
     race: dict = races[race_number-1]
     race_path: Path = Path(race['path'])
     agg_results = list()
-    results_file = Path(race_path, f'results.json')
+    results_file = Path(race_path, Files.JSON_RESULTS.value)
+    leaderboard_file: Path = Path(race_path, Files.JSON_RACE_LEADERBOARD.value)
     if not results_file.exists():
-        print(f'[*] No results for {race["name"]} available at this time')
+        if not leaderboard_file.exists():
+            print(f'[*] No results for {race["name"]} available at this time')
         return
     results: list = json.load(results_file.open(mode='r', encoding='utf-8'))
-    user_file = Path(Config.series.series_path, f'user_data.json')
+    user_file = Path(Config.series.series_path, Files.JSON_USER_DATA.value)
     users: dict = json.load(user_file.open(mode='r', encoding='utf-8'))
     event: dict
     for event in results:
@@ -415,7 +417,6 @@ def create_race_leaderboard(race_number: int):
                                  **user_info})
             agg_position += 1
 
-    leaderboard_file: Path = Path(race_path, "leaderboard.json")
     json.dump(best_results, leaderboard_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
 
@@ -438,7 +439,7 @@ def create_series_leaderboard(day_filter: IsoDow = IsoDow.ALL, month_filter: Rac
             if datetime.fromisoformat(race['date']).month != month_filter.value:
                 continue
         year = datetime.fromisoformat(race['date']).year
-        leaderboard_file = Path(race['path'], 'leaderboard.json')
+        leaderboard_file = Path(race['path'], Files.JSON_RACE_LEADERBOARD.value)
         if not leaderboard_file.exists():
             continue
         leaderboard: list = json.load(leaderboard_file.open(mode='r', encoding='utf-8'))
@@ -480,7 +481,7 @@ def create_series_leaderboard(day_filter: IsoDow = IsoDow.ALL, month_filter: Rac
         league_lb_file: Path = Path(Config.series.series_path,
                                     f'series_watt_monster_{year}_{month_filter.value:02}_{month_filter}.json')
     else:
-        league_lb_file: Path = Path(Config.series.series_path, 'series_leaderboard.json')
+        league_lb_file: Path = Path(Config.series.series_path, Files.JSON_SERIES_LEADERBOARD.value)
 
     if len(ranked_league_list) > 0:
         json.dump(ranked_league_list, league_lb_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
@@ -490,7 +491,7 @@ def create_iso3166_1_leaderboard():
     """
     Creates a leaderboard based on the ISO3166-1 A-2 Country codes, possibly creating an international incident
     """
-    series_lb_file: Path = Path(Config.series.series_path, 'series_leaderboard.json')
+    series_lb_file: Path = Path(Config.series.series_path, Files.JSON_SERIES_LEADERBOARD.value)
     series_lb: list = json.load(series_lb_file.open(mode='r', encoding='utf-8'))
     league_of = dict()
     for league_row in series_lb:
@@ -506,7 +507,7 @@ def create_iso3166_1_leaderboard():
     _list: list = [{'cc': k, 'points': v} for k, v in league_of.items()]
     sorted_iso_lb: list = sorted(_list, key=lambda _x: int(_x['points']), reverse=True)
 
-    iso_lb_file: Path = Path(Config.series.series_path, 'iso3166_1_leaderboard.json')
+    iso_lb_file: Path = Path(Config.series.series_path, Files.JSON_ISO3166_1_LEADERBOARD.value)
     json.dump(sorted_iso_lb, iso_lb_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
 
@@ -542,7 +543,7 @@ def create_user_data_json_file():
     """
     Converts user_data.csv to JSON and merges in information from Rouvy
     """
-    json_user_data_file: Path = Path(Config.series.series_path, 'user_data.json')
+    json_user_data_file: Path = Path(Config.series.series_path, Files.JSON_USER_DATA.value)
     if not json_user_data_file.exists():
         user_data: dict = convert_user_data_to_json()
         # Move the users that we can not find on Rouvy to the end of the dictionary

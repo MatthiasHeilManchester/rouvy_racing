@@ -58,6 +58,11 @@ class Files(Enum):
     JSON_USER_DATA = "user_data.json"
     JSON_ROUTE = "route.json"
     JSON_RACES = "races.json"
+    JSON_RACE_LEADERBOARD = "leaderboard.json"
+    JSON_SERIES_LEADERBOARD = "series_leaderboard.json"
+    JSON_ISO3166_1_LEADERBOARD = "iso3166_1_leaderboard.json"
+    JSON_EVENTS = "events.json"
+    JSON_RESULTS = "results.json"
 
 
 @enum.unique
