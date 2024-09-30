@@ -143,6 +143,9 @@ def update_head_to_head_data():
     Collects data for the head-to-head module
     """
     lb_path: Path = Path(Config.series.series_path, Files.JSON_SERIES_LEADERBOARD.value)
+    # Do we have any results to work with?
+    if not lb_path.exists():
+        return  # No results, we are done here.
     lb: list = json.load(open(lb_path, 'r', encoding='utf-8'))
     user_list = list()
     user: dict
@@ -492,6 +495,9 @@ def create_iso3166_1_leaderboard():
     Creates a leaderboard based on the ISO3166-1 A-2 Country codes, possibly creating an international incident
     """
     series_lb_file: Path = Path(Config.series.series_path, Files.JSON_SERIES_LEADERBOARD.value)
+    # Check if we have any results to work with
+    if not series_lb_file.exists():
+        return  # no results yet, we are done here.
     series_lb: list = json.load(series_lb_file.open(mode='r', encoding='utf-8'))
     league_of = dict()
     for league_row in series_lb:
