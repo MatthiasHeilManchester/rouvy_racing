@@ -89,7 +89,7 @@ def create_race(race_number: int, test_mode: bool = False):
 
     i: int = 0
     for offset in offsets:
-        utc_offset = int(tz.utcoffset(race_date + timedelta(hours=offset)).total_seconds()/60)
+        utc_offset = -1 * int(tz.utcoffset(race_date + timedelta(hours=offset)).total_seconds()/60)
         post_race_to_rouvy(route_id=route,
                            race_date=race_date + timedelta(hours=offset),
                            offset_minutes=utc_offset,
