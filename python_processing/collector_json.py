@@ -14,7 +14,7 @@ def get_challenges() -> list:
     Collect current and planned challenges from Rouvy.
     :return: A list of challenges.
     """
-    challenge_types: list = ['actual', 'planned']
+    challenge_types: list = ['actual', 'planned', 'open']
     challenge_list: list = list()
     for challenge_type in challenge_types:
         url = (f"https://riders.rouvy.com/challenges/status/{challenge_type}"

@@ -124,7 +124,7 @@ updated.
     Steven Brown</a> during a rewrite required to accommodate
     <a href="https://www.rouvy.com">Rouvy</a>'s changes of their webpages.
     <br><br>
-    We're currently doing the Winter Series 24-35 (from
+    We're currently doing the Winter Series 24-25 (from
     October-March) with two races per week (on Wednesdays and Saturdays).
     The final league tables from the previous seasons have now been archived:
     <ul>
