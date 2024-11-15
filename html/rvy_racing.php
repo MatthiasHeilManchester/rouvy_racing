@@ -4,8 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>Rvy_racing</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
     <link rel="stylesheet" href="css/style.css">
     <script src="js/script.js"></script>
+    <script src="js/jquery-3.7.1.min.js"></script>
 
     
     <script>
@@ -21,7 +23,7 @@
       // file appears to get processed, so the actions in it are
       // are performed (e.g. assigning the entries in the drop-down
       // menus)
-      import { evaluate_head_to_head } from "./head_to_head_module.js";
+      import { evaluate_head_to_head } from "./js/head_to_head_module.js";
 
       //...and add it to the class. Not sure why it's not simply visible
       // by itself, given that I've just imported it. Oh well
@@ -32,7 +34,7 @@
   </head>
   <body>
 
-    <img class="tabImage" src="rvy_racing.png" alt="rvy_racing logo">
+    <img class="tabImage" src="images/rvy_racing.png" alt="rvy_racing logo">
     <input type="radio" name="tabs" id="tab1" checked>
     <label for="tab1">Welcome</label>
     <input type="radio" name="tabs" id="tab2">
@@ -43,80 +45,93 @@
     <label for="tab4">League Table</label>
     <input type="radio" name="tabs" id="tab5">
     <label for="tab5">Contact/FAQ</label>
-    
-    
+
+<?php
+// This is to allow links + anchors from the all_races_in_series page to results, eg "rvy_racing.php?races#race7"
+// This removes a load of duplication and directories
+// need to clear the url prams after as it can make a mess of things
+if (isset($_GET['race'])) {
+    $race  = $_GET['race'];
+    echo "<script defer type='text/javascript'>
+            document.getElementById('tab4').click();
+            window.history.replaceState(null, '', window.location.pathname);
+            $(document).ready(function(){scrollToId('race" . $race . "');});
+          </script>";
+} ?>
+
+<?php
+// This is to allow a refresh and return to the same tab and scroll point
+// need to clear the url prams after as it can make a mess of things
+if (isset($_GET['RacesTab'])) {
+$scroll = $_GET['RacesTab'];
+echo "<script defer type='text/javascript'>
+    document.getElementById('tab3').click();
+    window.history.replaceState(null, '', window.location.pathname);
+    $(document).ready(function(){scrollToPosition( $scroll );});
+</script>";
+} ?>
+
 <div class="tab content1">
 
 
   <center>
     <div style="border: 1px solid black; background-color:rgb(250,250,250); border-radius:10px;   box-shadow: 4px 4px lightgray; padding: 10px; width:60%;">
 	  <h3>(Watt-)Monster of the Month</h3>
-    Given that people may join this group at random points in the
-    season it seems unfair to have them linger at the end of the league table forever, so here's
-	  a new feature: the "(Watt-)Monster of the Month" competition, a mini-league table extracted from all the races in a given month. Now you can experience the end-of-season madness every month. Yay!  
+        Given that people may join this group at random points in the season it seems unfair to have
+        them linger at the end of the league table forever, so here's a new feature: the "(Watt-)Monster
+        of the Month" competition, a mini-league table extracted from all the races in a given month.
+        Now you can experience the end-of-season madness every month. Yay!
 	  <?php
-           if (1==0)
-           {
-           echo "<p><center><b>[(Watt-)Monster of the Month results will appear here when the first race has been processed.]</b></center></p>";}
-           else {
-           $race_series="rvy_racing";
-	   #$month_list=["Oct","Nov","Dec","Jan","Feb","Mar"];
-	   $month_list=["May","Jun","Jul","Aug","Sep"];
-	   echo "<ul>";
-           foreach ($month_list as $my_month)
-	  {
-	  $glob_string="../".$race_series."_".$my_month."*/league_table.html";
-	  $result_file_list = glob($glob_string);
-	  if (count($result_file_list)>1)
-	  {
-	    echo "Error: Too many entries in result file list: ".$result_file_list;
-	    //die();
-	  }
-	  if (count($result_file_list)<1)
-	  {
-	    //echo "ERROR: No league tables yet, so there are no monthly league tables either!\n";
-	  }	  
-	  foreach ($result_file_list as $result_file)
-	  {
-	  //echo "result file = ".$result_file."<br>";
-	  $string_length=strlen($result_file);
-	  $year_start=$string_length-22;
-		   $year=substr($result_file,$year_start,4);
-		   $month_start=$string_length-26;
-		   $month=substr($result_file,$month_start,3);
-		   echo "<li style=\"text-align:left;\"><a href=\"$result_file\">".$month." ".$year."</a> <br>";
-		   }
-		   }
-		   echo "</ul>";
-}?>
+      $file_glob = './generated/watt_monster_*_*.html';
+      $result_file_list = glob($file_glob);
+      if (count($result_file_list) == 0) {
+           echo "<p><center><b>[(Watt-)Monster of the Month results will appear here when the first race has been processed.]</b></center></p>";
+      }
+      echo "<ul>";
+	  foreach ($result_file_list as $result_file) {
+          preg_match('@^(\./generated/watt_monster_)(\d{4})_(\d{2})_(\w{3})(.html)@i', $result_file, $matches);
+          if (count($matches) != 6) { continue; }
+          $year = $matches[2];
+          $month_num = (int)$matches[3];
+          $month_name = $matches[4];
+          echo "<li style=\"margin-left:50px; text-align:left;\"><a href=\"watt_monster.php?month=".$month_num."\">".$month_name." ".$year."</a></li>";
+      }
+      echo "</ul>";
+      ?>
 Related to this: Feel free to join our races any time to try it out. There's no password
 protection, so just turn up. If you then decide to join us (see below for instructions)
 your previous efforts will be incorporated retrospectively next time the league table is
-updated. 
+updated.
     </div>
     </center>
-      
+
     <h1>Rvy Racing: Welcome</h1>
     This is the official homepage of Rvy Racing - short for, yes, you
     guessed it: "Rouvy Racing".
     <br><br>The abbreviation is a meek attempt
     to avoid trouble with
-    <a href="https://www.rouvy.com">Rouvy</a>'s legal department, and we
+    <a href="https://www.rouvy.com" target="_blank">Rouvy</a>'s legal department, and we
     should stress that this site is not affiliated
     with or endorsed by them; we're simply using their great platform 
     to host our races. <br><br>
     The group emerged from
-    <a href="https://www.robirini66.com">RBF</a>, originally
+    <a href="https://www.robirini66.com" target="_blank">RBF</a>, originally
     set up by Robi Rini, but discontinued when he moved to
-    <a href="https://www.kinomap.com">kinomap</a>.
+    <a href="https://www.kinomap.com" target="_blank">kinomap</a>. The initial machinery
+    for these pages was written (cobbled together!) by
+    <a href="https://www.strava.com/athletes/9652383" target="_blank">Matthias Heil</a> and
+    then significantly improved by <a href="https://www.strava.com/athletes/1140597" target="_blank">
+    Steven Brown</a> during a rewrite required to accommodate
+    <a href="https://www.rouvy.com">Rouvy</a>'s changes of their webpages.
     <br><br>
-    We're currently doing the Summer Series 24 (from
-    May-September) with one race per week (on Wednesdays).
+    We're currently doing the Winter Series 24-25 (from
+    October-March) with two races per week (on Wednesdays and Saturdays).
     The final league tables from the previous seasons have now been archived:
     <ul>
-      <li><a href="../../rvy_racing_archived_seasons/rvy_racing_winter_22-23/league_table.html">Winter 22-23</a> </li>
-      <li><a href="../../rvy_racing_archived_seasons/rvy_racing_summer_23/league_table.html">Summer 23</a> </li>
-      <li><a href="../../rvy_racing_archived_seasons/rvy_racing_winter_23-24/league_table.html">Winter 23-24</a> </li>
+      <li><a href="../rvy_racing_archived_seasons/rvy_racing_winter_22-23/league_table.html">Winter 22-23</a> </li>
+      <li><a href="../rvy_racing_archived_seasons/rvy_racing_summer_23/league_table.html">Summer 23</a> </li>
+      <li><a href="../rvy_racing_archived_seasons/rvy_racing_winter_23-24/league_table.html">Winter 23-24</a> </li>
+      <li><a href="../rvy_racing_archived_seasons/rvy_racing_summer_24/league_table.html">Summer 24</a> </li>
     </ul>
     If you're interested in joining our race series, please register
     on our <a href="https://www.matthias-heil.co.uk/phpbb/">phpBB
@@ -139,8 +154,8 @@ updated.
         <center><a href="https://www.matthias-heil.co.uk/phpbb/">https://www.matthias-heil.co.uk/phpbb/</a></center>
       <li> Click on "Register" in the top right corner:
         <br><br>
-        <center><a href="registration1.jpg"><img class="myImage"
-                                                 src="registration1.jpg" alt="registration"
+        <center><a href="images/registration1.jpg"><img class="myImage"
+                                                        src="images/registration1.jpg" alt="registration"
                                                  ></a><br><small>[click on
           screenshot to enlarge]</small></center>
         <br>
@@ -151,8 +166,8 @@ there. My offer to register you as proxy still stands. The message board is thir
         <br><br>
       <li> Read the terms and conditions (or not...) and accept:
         <br><br>
-        <center><a href="registration2.jpg"><img class="myImage"
-                                                 src="registration2.jpg" alt="registration"
+        <center><a href="images/registration2.jpg"><img class="myImage"
+                                                        src="images/registration2.jpg" alt="registration"
                                                  ></a><br><small>[click on
           screenshot to enlarge]</small></center>
         <br>
@@ -177,14 +192,14 @@ there. My offer to register you as proxy still stands. The message board is thir
             registration has been processed.
         </ul>
         <br><br>
-        <center><a href="registration3.jpg"><img class="myImage" src="registration3.jpg"
- alt="registration"                                                 ></a><br><small>[click on
+        <center><a href="images/registration3.jpg"><img class="myImage" src="images/registration3.jpg"
+                                                        alt="registration"                                                 ></a><br><small>[click on
           screenshot to enlarge]</small></center>
         <br>
       <li> When you're done it should look a bit like this:
         <br><br>
-        <center><a href="registration4.jpg"><img class="myImage" src="registration4.jpg"
-   alt="registration"                                               ></a><br><small>[click on
+        <center><a href="images/registration4.jpg"><img class="myImage" src="images/registration4.jpg"
+                                                        alt="registration"                                               ></a><br><small>[click on
           screenshot to enlarge]</small></center>
         Now press "submit".
         <br><br>
@@ -201,20 +216,6 @@ there. My offer to register you as proxy still stands. The message board is thir
     <br>
     <hr>
     <br>
-    <h3>Warning:</h3>
-    Rouvy do not provide a formal API to their (our!) data, so the 
-    information required to maintain our league table is extracted
-    from their webpages. There is a good chance
-    that the machinery developed to do this will break when they
-    move their route and race pages
-    from <a href="https://my.rouvy.com">
-      https://my.rouvy.com</a> to <a href="https://www.rouvy.com">
-      https://www.rouvy.com</a>, and it
-    may, in fact, prove impossible to continue this approach. If this
-    happens, we may have to suspend the races (or at least their
-    transfer to the league table) for a bit. Various possible alternatives
-    exist but they'd need to be implemented (quickly) and are not
-    super-attractive. Anyway, let's not worry about this just yet... 
 </div>
 
 
@@ -235,42 +236,22 @@ there. My offer to register you as proxy still stands. The message board is thir
   <li> Each race will be repeated several times (to cater for different
     timezones). Once the route has been published (typically a week in
     advance) you can sign up for one (or more!) of these
-    on <a href="https://my.rouvy.com/onlinerace">Rouvy</a> as usual. 
+    on <a href="https://rouvy.com/" target="_blank">Rouvy</a> as usual. 
     Direct links to the races are also provided directly from the race
     tab on this page. This lists
     dates, times, routes, etc. <br><br>
   <li> If none of the official times suit you, you can also arrange
     your own race
-    on <a href="https://my.rouvy.com/onlinerace">Rouvy</a>.
+    on <a href="https://rouvy.com" target="_blank">Rouvy</a>.
     The race must be on
     the same day (in GMT) as the first official race. This gives everybody
-    24 hours to do the route. Make sure you follow the link <b>"Add your
-      own?"</b> for the appropriate race in the race tab on this page
+    24 hours to do the route. Click on the  <b>"Add your
+      own?"</b> button for the race on the "Races" tab to get
+    specific instructions.
     <br><br>
-    <center><a href="add_your_own.jpg"><img class="myImage" src="add_your_own.jpg"
- alt="add your own race"                                            ></a></center>
-    <br>
-    This allows our machinery to extract
-    the finish time and insert it into the compound ranking. The
-    registration page will check that the race is held on the right
-    route and on the right day. Note that the link disappears and is
-    replaced by the race results once the race has been
-    processed. <br><br>Please do not delete races on rouvy once you've
-    registered them here. It breaks the scripts! <br><br>Finally,
-    there's a "feature" (bug?) which means that races
-    can't be added while the race is deemed to be running (i.e. while
-    the rouvy webpage displays the elapsed time since the race start). If
-    this is the case, a suitable error message is displayed. You
-    can upload races before and after the race. If you forget to
-    do this while the "Add your own" button is active
-    just send an email to the race organiser and he'll do it for you
-    retrospectively. <br><br>
   <li> You cannot get credit for individual rides (i.e. rides done outside
-    races). This is mainly a technical issue: Rouvy doesn't provide
-    script-based access to the finish times for individual rides and maintaining
-    spreadsheets by hand is not an option. Sorry. If you absolutely want to ride
-    by yourself, create your own race (see above) and password protect it; keep
-    the password to yourself and nobody will bother you.<br><br>
+    races).
+    <br><br>
   <li> If you participate in multiple instances of a race, your best
     time will count.<br><br>
   <li> Points will be awarded according to the UCI cyclocross scheme:
@@ -308,22 +289,7 @@ are a few rules anyway.
   <li> You may have noticed that Rouvy allows you to specify your
     weight. For the implications of this fact you are referred to rule
     1.<br><br>
-  <li> Make sure that your average power (W/kg) is displayed on the
-    rouvy route pages and that the link to the activity (magnifying
-    glass) is accessible.
-    The picture below (click on it to magnify) shows how to annoy
-    people. Please don't! You may
-    have privacy concerns (though I don't know what they would be...) but
-    people simply want to be able to convince themselves that other
-    racers' data looks plausible. Personally I don't think it's a huge
-    deal and I get annoyed about endless "cheater" discussions (see below), but if
-    you hide your data, you're raising questions. If you want to keep
-    your data hidden, please race elsewhere.
-    <br><br>
-    <center><a href="nonono.png"><img class="myImage" src="nonono.png"
- alt="nonono"                                      ></a></center>
-    <br>
-    Similarly, it would be appreciated if you kept your strava profile
+  <li> It would be appreciated if you kept your strava profile
                                       public and used a HRM. However,
                                       this will not be
     enforced.<br><br>
@@ -338,7 +304,8 @@ are a few rules anyway.
   <li> Banter on
   the <a href="https://www.matthias-heil.co.uk/phpbb/">discussion
       board</a>
-    is actively encouraged. Taking
+    is actively encouraged (though, to be honest, it's not much used for this
+    purpose -- the post-race fun happens on strava). Taking
     yourself (or this whole thing) too seriously is not. Launching
     debates about possible cheaters (or other rule 1 violators) is
     strictly <em>verboten</em>. If you have any
@@ -347,8 +314,8 @@ are a few rules anyway.
     can have a quiet word (and/or escalate things if necessary; see
     below).
     <br><br>
- <center><a href="private_message.jpg"><img class="myImage" src="private_message.jpg"
-   alt="private message"                                   ></a></center>
+ <center><a href="images/private_message.jpg"><img class="myImage" src="images/private_message.jpg"
+                                                   alt="private message"                                   ></a></center>
     <br><br>
   <li> No overtly political etc. discussions because it's likely to create
     tension. This is not censorship -- there are plenty of other forums
@@ -370,17 +337,19 @@ are a few rules anyway.
 
   <h1>Rvy Racing: The races</h1>
 
-  <h2>Nov 15th 2024: Sorry! The latest update to the rouvy webpage has temporarily
+  Nov 15th 2024: Sorry! The latest update to the rouvy webpage has temporarily
     broken the machinery we use to list races and to update the
-    league table. You can find the upcoming races here:
+  league table. You can find the upcoming races here:
+  <br>
     <center>
-      <a href="https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming">"https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming</a>
-       </center>   
-     The league table will be updated as soon as possible. In the
+      <a href="https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming">https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming</a>
+       </center>
+<br>
+    The league table will be updated as soon as possible. In the
       meantime keep racing. Hard!
-        
-  </h2>
-<?php readfile("all_races_in_series.html"); ?>
+<hr>
+
+<?php readfile("./generated/all_races_in_series.html"); ?>
 
 </div>
 
@@ -390,18 +359,16 @@ are a few rules anyway.
   
   <h1>Rvy Racing: The league table</h1>
 
-
-  <h2>Nov 15th 2024: Sorry! The latest update to the rouvy webpage has temporarily
-    broken the machinery we use to list races and to update the
-    league table. You can find the upcoming races here:
+ Nov 15th 2024: Sorry! The latest update to the rouvy webpage has temporarily broken the machinery we use to list races and to update the league table. You can find the upcoming races here: 
+  <br>
     <center>
-      <a href="https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming">"https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming</a>
-     </center>   
+      <a href="https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming">https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming</a>
+       </center>
+<br>
     The league table will be updated as soon as possible. In the
       meantime keep racing. Hard!
-         
-  </h2>
-  
+<hr>
+
 <hr>
 <div id="head_to_head_div">
   <center>
@@ -445,9 +412,9 @@ are a few rules anyway.
 
 <hr>
 
-<div id="full_league_table_div" style="display:block; font-size:small;"> <?php readfile("league_table.html"); ?></div>
-<div id="wed_league_table_div" style="display:none; font-size:small;"> <?php readfile("league_table_wed.html"); ?></div>
-<div id="sat_league_table_div" style="display:none; font-size:small;"> <?php readfile("league_table_sat.html"); ?></div>
+<div id="full_league_table_div" style="display:block; font-size:small;"> <?php readfile("./generated/league_table.html"); ?></div>
+<div id="wed_league_table_div" style="display:none; font-size:small;"> <?php readfile("./generated/league_table_Wednesday.html"); ?></div>
+<div id="sat_league_table_div" style="display:none; font-size:small;"> <?php readfile("./generated/league_table_Saturday.html"); ?></div>
 
 </div>
 
@@ -461,11 +428,12 @@ are a few rules anyway.
   <ul>
 <li> Please use the <a href="https://www.matthias-heil.co.uk/phpbb/">discussion
       board</a> for, well, for discussions, I guess. Constructive suggestions for improvement, bug
-  reports/fixes, are also welcome. <br><br>
+  reports/fixes, are also welcome. However, note that the discussion board is mainy used for registering
+  new users; the post-race banter happens on strava!<br><br>
   <li >The race organiser can be contacted directly via
   the "Contact us" link on the registration page:
   <br><br>
-  <center><a href="contact.jpg"><img class="myImage" src="contact.jpg" alt="contact"
+  <center><a href="images/contact.jpg"><img class="myImage" src="images/contact.jpg" alt="contact"
                                       ></a></center>
   <br>
   You don't have to have registered to do this, though you will have
@@ -474,7 +442,7 @@ are a few rules anyway.
                                       rather: get credit for them!).<br><br> 
 <li> Those interested in the coding aspect are welcome to contribute to the
       machinery via
-the  <a href="https://github.com/MatthiasHeilManchester/rvy_racing">
+the  <a href="https://github.com/MatthiasHeilManchester/rvy_racing" target="_blank">
     github repository</a>.
 </ul>
 
@@ -482,6 +450,7 @@ the  <a href="https://github.com/MatthiasHeilManchester/rvy_racing">
   <hr>
   
 <h1>FAQ</h1>
+[Not very frequently asked, actually; the discussion board never really took off, but if you're interested...]
 <ul>
   <li> <h2><b>How to change settings in the profile on the phpBB Discussion
   Forum (e.g. to add your strava url if you forgot to do so when you
@@ -489,32 +458,32 @@ the  <a href="https://github.com/MatthiasHeilManchester/rvy_racing">
   <ul>
   <li> Click on your username (here assumed to be joe_cool) in the top right corner:
     <br><br>
-    <center><a href="profile1.jpg"><img class="myImage"
-                                             src="profile1.jpg" alt="profile"
+    <center><a href="images/profile1.jpg"><img class="myImage"
+                                               src="images/profile1.jpg" alt="profile"
                                              ></a><br><small>[click on
         screenshot to enlarge]</small></center>
     <br>
     <br>
   <li> Click on "Profile" in the drop-down menu:
     <br><br>
-    <center><a href="profile2.jpg"><img class="myImage"
-                                             src="profile2.jpg" alt="profile"
+    <center><a href="images/profile2.jpg"><img class="myImage"
+                                               src="images/profile2.jpg" alt="profile"
                                              ></a><br><small>[click on
         screenshot to enlarge]</small></center>
     <br>
     <br>
   <li> Click on "Edit Profile" 
     <br><br>
-    <center><a href="profile3.jpg"><img class="myImage"
-                                             src="profile3.jpg" alt="profile"
+    <center><a href="images/profile3.jpg"><img class="myImage"
+                                               src="images/profile3.jpg" alt="profile"
                                              ></a><br><small>[click on
         screenshot to enlarge]</small></center>
     <br>
     <br>
   <li> Fill in/update whatever you want to add/change: 
     <br><br>
-    <center><a href="profile4.jpg"><img class="myImage"
-                                             src="profile4.jpg" alt="profile"
+    <center><a href="images/profile4.jpg"><img class="myImage"
+                                               src="images/profile4.jpg" alt="profile"
                                              ></a><br><small>[click on
         screenshot to enlarge]</small></center>
     <br>
@@ -528,8 +497,8 @@ the  <a href="https://github.com/MatthiasHeilManchester/rvy_racing">
       <ul>
         <li> Click on the appropriate forum (here the "Races" one):
           <br><br>
-          <center><a href="subscribe_to_forum1.jpg"><img class="myImage"
-                                              src="subscribe_to_forum1.jpg" alt="subscribe"
+          <center><a href="images/subscribe_to_forum1.jpg"><img class="myImage"
+                                                                src="images/subscribe_to_forum1.jpg" alt="subscribe"
                                               ></a><br><small>[click on
               screenshot to enlarge]</small></center>
           <br>
@@ -537,8 +506,8 @@ the  <a href="https://github.com/MatthiasHeilManchester/rvy_racing">
         <li> Click on "Subscribe forum" (which, strangely, is already
         ticked, even though you're not subscribed yet!):
           <br><br>
-          <center><a href="subscribe_to_forum2.jpg"><img class="myImage"
-                                              src="subscribe_to_forum2.jpg" alt="subscribe"
+          <center><a href="images/subscribe_to_forum2.jpg"><img class="myImage"
+                                                                src="images/subscribe_to_forum2.jpg" alt="subscribe"
                                               ></a><br><small>[click on
               screenshot to enlarge]</small></center>
 	  <br>
@@ -548,8 +517,8 @@ the  <a href="https://github.com/MatthiasHeilManchester/rvy_racing">
         <li> Had enough of all these emails? Click on "Unsubscribe
         forum" and you'll be left alone again.
           <br><br>
-          <center><a href="subscribe_to_forum3.jpg"><img class="myImage"
-                                              src="subscribe_to_forum3.jpg" alt="subscribe"
+          <center><a href="images/subscribe_to_forum3.jpg"><img class="myImage"
+                                                                src="images/subscribe_to_forum3.jpg" alt="subscribe"
                                               ></a><br><small>[click on
               screenshot to enlarge]</small></center>
           <br>
