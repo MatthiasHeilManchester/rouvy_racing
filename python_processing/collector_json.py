@@ -10,10 +10,15 @@ Here we collect json data from Rouvy, and return it for additional processing
 
 def get_challenges() -> list:
     """
-    Collect current and planned challenges from Rouvy.
+    Collect Ongoing, Upcoming, Joined and Finished challenges from Rouvy.
     :return: A list of challenges.
     """
-    challenge_types: list = ['actual', 'planned']
+    # Depending on whom the request is being performed by, we may need to search all 4 options
+    # Ongoing  == actual
+    # Upcoming == planned
+    # Joined   == open
+    # Finished == finished
+    challenge_types: list = ['actual', 'planned', 'open', 'finished']
     challenge_list: list = list()
     for challenge_type in challenge_types:
         url = (f"https://riders.rouvy.com/challenges/status/{challenge_type}"
