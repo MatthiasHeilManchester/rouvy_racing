@@ -1,5 +1,6 @@
 import json
 import sys
+from typing import List
 from config import Config, IsoDow
 from enums import Files
 from common import json_date_to_datetime, backup_series
@@ -126,7 +127,7 @@ def refresh_known_events(race_number: int) -> None:
     race = get_races()[race_number -1]
     race_path: Path = Path(race['path'])
     events_file: Path = Path(race_path, Files.JSON_EVENTS.value)
-    events: list = json.load(open(events_file, 'r', encoding='utf-8'))
+    events: list = json.load(events_file.open('r', encoding='utf-8'))
     updated_events: list = list()
     for event in events:
         event_info: dict = get_event_info(event['id'])
@@ -146,7 +147,7 @@ def update_head_to_head_data():
     # Do we have any results to work with?
     if not lb_path.exists():
         return  # No results, we are done here.
-    lb: list = json.load(open(lb_path, 'r', encoding='utf-8'))
+    lb: list = json.load(lb_path.open('r', encoding='utf-8'))
     user_list = list()
     user: dict
     for user in (val for val in lb if val['raceCompleteCount'] > 0):
@@ -161,7 +162,7 @@ def update_head_to_head_data():
         race_lb_path: Path = Path(race['path'], Files.JSON_RACE_LEADERBOARD.value)
         if not race_lb_path.exists():
             continue
-        race_lb: list = json.load(open(race_lb_path, 'r', encoding='utf-8'))
+        race_lb: list = json.load(race_lb_path.open('r', encoding='utf-8'))
         hh_results: list = list()
         for result in (val for val in race_lb if val['userSessionStatus'] == 'finished'):
             hh_results.append({"rouvy_username": result['rvy_rouvy_name'], "points": result['rvy_points']})
@@ -269,13 +270,13 @@ def __combine_everything_for_jinja_template(day_filter: IsoDow = IsoDow.ALL, mon
         year = datetime.fromisoformat(race['date']).year
         # Add route info
         route_file: Path = Path(race['path'], Files.JSON_ROUTE.value)
-        route: dict = json.load(open(route_file, 'r', encoding='utf-8'))
+        route: dict = json.load(route_file.open('r', encoding='utf-8'))
         race['route'] = route['route']
 
         # Add event info
         events_file: Path = Path(race['path'], Files.JSON_EVENTS.value)
         if events_file.exists():
-            events = sorted(json.load(open(events_file, 'r', encoding='utf-8')), key=lambda _: _['startDateTime'])
+            events = sorted(json.load(events_file.open('r', encoding='utf-8')), key=lambda _: _['startDateTime'])
         else:
             # Lost events due to Rouvy update
             events = [{'id': '',
@@ -292,7 +293,7 @@ def __combine_everything_for_jinja_template(day_filter: IsoDow = IsoDow.ALL, mon
         leaderboard_file = Path(race['path'], Files.JSON_RACE_LEADERBOARD.value)
         if leaderboard_file.exists():
             race['processed'] = True
-            results = json.load(open(leaderboard_file, 'r', encoding='utf-8'))
+            results = json.load(leaderboard_file.open('r', encoding='utf-8'))
             race['results'] = results
         else:
             race['processed'] = False
@@ -307,10 +308,16 @@ def __combine_everything_for_jinja_template(day_filter: IsoDow = IsoDow.ALL, mon
 
     series_leaderboard = list()
     if series_leaderboard_file.exists():
-        series_leaderboard = json.load(open(series_leaderboard_file, 'r', encoding='utf-8'))
+        series_leaderboard = json.load(series_leaderboard_file.open('r', encoding='utf-8'))
+
+    lanterne_rouge_leaderboard_file = Path(Config.series.series_path, Files.JSON_LANTERNE_ROUGE_LEADERBOARD.value)
+    lanterne_rouge = list()
+    if lanterne_rouge_leaderboard_file.exists():
+        lanterne_rouge = json.load(lanterne_rouge_leaderboard_file.open('r', encoding='utf-8'))
     template_data: dict = {'title': title,
                            'series_leaderboard': series_leaderboard,
-                           'races': reverse_races}
+                           'races': reverse_races,
+                           'lanterne_rouge': lanterne_rouge}
     return template_data
 
 
@@ -489,6 +496,57 @@ def create_series_leaderboard(day_filter: IsoDow = IsoDow.ALL, month_filter: Rac
         json.dump(ranked_league_list, league_lb_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
 
+def create_lanterne_rouge_leaderboard():
+    """
+    Creates a leaderboard based on https://www.welovecycling.com/wide/2023/07/20/the-story-of-the-lanterne-rouge/
+    The term Lanterne Rouge, which in French means “red lantern,” was inspired by the red lights that trains have
+    at the end of their last car. It symbolises the end of the competition, which in the eyes of the organizers of
+    the Tour de France, was just as important as the front. Thus, in 1903 they introduced the Lanterne Rouge to
+    honour the last in the general classification who didn't abandon the race.
+    """
+    remove_list: list[str] = ['time', 'timeSeconds', 'userSessionStatus', 'aggPosition', 'avgWattKg', 'avgSpeedmps']
+    lanterne_rouge: dict = dict()
+    for race in sorted(get_races(), reverse=True, key=lambda d: d['number']):  # Reversed to get most current user Info
+        leaderboard_file = Path(race['path'], Files.JSON_RACE_LEADERBOARD.value)
+        if not leaderboard_file.exists():
+            continue
+        leaderboard: list = json.load(leaderboard_file.open(mode='r', encoding='utf-8'))
+        for lb_result in sorted(leaderboard, key=lambda d: d['rvy_points']):
+            if lb_result['rvy_points'] == 0:
+                continue
+            for pop in remove_list:
+                lb_result.pop(pop, None)
+            #print(lb_result)
+            user_name = lb_result['userName']
+            user_points = lanterne_rouge.get(user_name, {'lanterne_rouge_points': 0, **lb_result})
+            user_points['lanterne_rouge_points'] += 1
+            lanterne_rouge[user_name] = user_points
+            break
+
+    lanterne_rouge_list = list()
+    for lb_result in lanterne_rouge:
+        lanterne_rouge[lb_result].pop('rvy_points', 0)
+        lanterne_rouge_list.append(lanterne_rouge[lb_result])
+
+    ranked_league_list = list()
+    rank = 1
+    last_rank = -1
+    last_points = -1
+    for lb_result in sorted(lanterne_rouge_list, reverse=True, key=lambda d: float(d['lanterne_rouge_points'])):
+        allocated_rank = rank
+        if last_points != lb_result['lanterne_rouge_points']:
+            last_points = lb_result['lanterne_rouge_points']
+            last_rank = rank
+        else:
+            allocated_rank = last_rank
+        ranked_league_list.append({'rank': allocated_rank, **lb_result})
+        rank += 1
+
+    league_lb_file: Path = Path(Config.series.series_path, Files.JSON_LANTERNE_ROUGE_LEADERBOARD.value)
+    if len(ranked_league_list) > 0:
+        json.dump(ranked_league_list, league_lb_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
+
+
 def create_iso3166_1_leaderboard():
     """
     Creates a leaderboard based on the ISO3166-1 A-2 Country codes, possibly creating an international incident
@@ -596,6 +654,7 @@ def regenerate_artifacts():
     for m in range(1, 13):
         create_series_leaderboard(month_filter=RaceMonth(m))
     create_iso3166_1_leaderboard()
+    create_lanterne_rouge_leaderboard()
     update_head_to_head_data()
     generate_html()
 
