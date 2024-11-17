@@ -6,7 +6,7 @@ from common import json_date_to_datetime, backup_series
 from pathlib import Path
 from collector_json import (get_route_info, get_event_results, get_challenges,
                             route_challenge_dict, convert_user_data_to_json, get_event_info)
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from event_finder import find_events
 from enums import (IsoDow, RaceMonth)
 from jinja2 import Environment, FileSystemLoader
@@ -205,7 +205,7 @@ def collect_event_data(race_number: int):
     last_event_date = datetime.fromisoformat(race['date']) + last_event_offset
 
     # If we are < 1 hour past the start time of the last possible event return
-    if datetime.utcnow() < (last_event_date + timedelta(hours=1)):
+    if datetime.now(timezone.utc) < (last_event_date + timedelta(hours=1)):
         print(f'[*] {race["name"]} not ready for collection, based on time')
         return
 
