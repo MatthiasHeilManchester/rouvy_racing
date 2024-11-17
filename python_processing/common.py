@@ -5,11 +5,11 @@ from pathlib import Path
 from config import Config, Constants
 from typing import Optional
 from http import HTTPStatus
-from enums import HTTPMethod
-from datetime import datetime
+from enums import HTTPMethod, RouvyEventType
+from datetime import datetime, timezone
 from requests import Session, Response
 __session: Optional[requests.Session] = None
-__last_request_time: datetime = datetime.utcnow()
+__last_request_time: datetime = datetime.now(timezone.utc)
 """
 Common things
 """
@@ -26,7 +26,7 @@ def nice_request(url: str, method: HTTPMethod = HTTPMethod.GET, payload=None) ->
     okay_enough:list = [HTTPStatus.OK, HTTPStatus.ACCEPTED, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT]
     global __last_request_time
     sleep_time: float = max(0.0, Constants.REQUEST_RATE_LIMIT -
-                            (datetime.utcnow() - __last_request_time).total_seconds())
+                            (datetime.now(timezone.utc) - __last_request_time).total_seconds())
     sleep(sleep_time)  # slow down if we need to
     response: Response = Response()
     status_code = HTTPStatus.IM_A_TEAPOT  # Python 3.9
@@ -43,7 +43,7 @@ def nice_request(url: str, method: HTTPMethod = HTTPMethod.GET, payload=None) ->
             response: Response = session.post(url=url, data=payload)
         else:
             raise NotImplementedError(f'Method {method} not implemented')
-        __last_request_time = datetime.utcnow()
+        __last_request_time = datetime.now(timezone.utc)
         status_code: int = response.status_code
         if status_code in okay_enough:
             break
