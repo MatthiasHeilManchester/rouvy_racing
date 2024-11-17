@@ -1,4 +1,5 @@
 import sh
+import json
 import requests
 from time import sleep
 from pathlib import Path
@@ -118,5 +119,137 @@ def backup_series() -> int:
     return result.exit_code
 
 
+def __get_remix_node_name(node: str, j: json) -> str:
+    """
+    Gets the node name
+    :param node: node id string
+    :param j: RemixJS Data
+    :return: Node name
+    """
+    assert node.startswith('_'), f'NodeID does not start with _: {node}'
+    node_id: int
+    try:
+        node_id = int(node[1:])
+    except ValueError:
+        assert False, f'NodeID not int: {node}'
+    node_name: str = j[node_id]
+    return node_name
+
+
+def __parse_remix_node(node_id: int, remix_data: json) -> dict:
+    """
+    Recursively parse RemixJS data
+    :param node_id: Starting node_id
+    :param remix_data: RemixJS data
+    :return: Dictionary
+    """
+    parsed_dict: dict = dict()
+    node_data = remix_data[node_id]
+    assert type(node_data) is dict, f'NodeData not dict: {node_data}'
+    for k, v in node_data.items():
+        node_name = __get_remix_node_name(k, remix_data)
+        val = remix_data[v]
+        # Expecting a:
+        # * Dictionary to nest into, or
+        # * List to iterate through, or
+        # * A value
+        if type(val) is dict:
+            parsed_dict[node_name] = __parse_remix_node(v, remix_data) # v or val
+        elif type(val) is list:
+            for list_item in val:
+                if list_item == 'P':
+                    # P Node Found
+                    # TODO: collect the next value in the list
+                    # TODO: Do something with this, if required, they are the other lines in he RemixJS data
+                    break  # For now, we just ignore them
+                if type(list_item) is int:
+                    node_list = parsed_dict.get(node_name, [])
+                    node_data = remix_data[int(list_item)]
+                    # Seen so far list of Dict, str, int
+                    if type(node_data) is dict:
+                        # recursively dig the dictionary
+                        node_list.append(__parse_remix_node(int(list_item), remix_data))
+                    elif type(node_data) in [int, str]:
+                        node_list.append(node_data)
+                    else:
+                        assert False, f'NodeData not dict, int or list: {node_data}'
+                    parsed_dict[node_name] = node_list
+                else:
+                    assert False, f"Some other value in list: '{list_item}'"
+        else:
+            parsed_dict[node_name] = val
+    return parsed_dict
+
+
+def remix_parse(data: str, debug: bool = False) -> dict:
+    """
+    A partial paser for RemixJS data
+    Only looks at the first / root data stream
+    Ignores PNodes (that's what I call them anyway)
+    :param debug: Optional, set to True to print debug messages
+    :param data: RemixJS data
+    :return: A nice dictionary from RemixJS data
+    """
+    parts = data.split('\n')
+    root: json = json.loads(parts[0])
+    if debug:
+        i = 0
+        for x in root:
+            print(f"{i}\t{x}")
+            i += 1
+
+    # Recursively parse the nodes in the RemixJS data
+    d = __parse_remix_node(0, root)
+
+    if debug:
+        print(json.dumps(d, indent=2))
+
+    return d
+
+
 if __name__ == '__main__':
     pass
+    #######################################################################
+    # Some tests for future me
+    # At some point Rouvy will likely kill off the old json api calls
+    #######################################################################
+    # route = "events_.$id"
+    # url = f"https://riders.rouvy.com/events/20cefe5e-ddf6-4729-a16e-cc9c03011f82/leaderboard.data?_routes=routes/_main.{route}"
+    # result = nice_request(url=url)
+    # remix_data = remix_parse(result.text, True)
+    #
+    # route = "events_.$id"
+    # url = f"https://riders.rouvy.com/events/20cefe5e-ddf6-4729-a16e-cc9c03011f82.data?_routes=routes/_main.{route}"
+    # result = nice_request(url=url)
+    # remix_data = remix_parse(result.text, True)
+
+    # route = "challenges.status.$status"
+    # for x in ['']:  # ['open', 'actual', 'planned', 'finished']:
+    #     url = f"https://riders.rouvy.com/challenges/status/{x}.data?_routes=routes/_main.{route}"
+    #     result = nice_request(url=url)
+    #     remix_data = remix_parse(result.text, True)
+
+    # route = "friends_.search"
+    # url = f"https://riders.rouvy.com/friends/search.data?query=spacech&_routes=routes/_main.{route}"
+    # result = nice_request(url=url)
+    # remix_data = remix_parse(result.text, True)
+    #
+    # route = "new-route.$id"
+    # url = f"https://riders.rouvy.com/new-route/96635.data?_routes=routes/_main.{route}"
+    # result = nice_request(url=url)
+    # remix_data = remix_parse(result.text, True)
+    #
+    # race_title = 'rvy_racing'
+    # event_type = RouvyEventType.RACE
+    # date_from = "2024-10-01"
+    # date_to = "2024-11-01"
+    # route = "events.search"
+    # url = (f"https://riders.rouvy.com/events/search.data?searchQuery={race_title}&"
+    #        f"smartTrainersOnly=true&"
+    #        f"type={event_type.value}&"
+    #        f"dateRange=custom&"
+    #        f"dateFrom={date_from}&"
+    #        f"dateTo={date_to}&"
+    #        f"_routes=routes/_main.{route}")
+    # result = nice_request(url=url)
+    # remix_data = remix_parse(result.text, True)
