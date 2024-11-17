@@ -94,7 +94,7 @@ def init_series():
     race_file: Path = Path(Config.series.series_path, Files.JSON_RACES.value)
     if not race_file.exists():
         # All new just dump out the generated race schedule
-        json.dump(races, open(race_file, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+        json.dump(races, race_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
         print(f'[*] "{Config.series.name}" initialised')
         return
     # races.json exists, lets see if it needs updating
@@ -116,7 +116,7 @@ def init_series():
 
     # Do the update if we need to
     if update_required:
-        json.dump(current_races, open(race_file, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+        json.dump(current_races, race_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
         print(f'[-] "{Config.series.name}" updated')
     else:
         print(f'[-] "{Config.series.name}" up to date')
@@ -133,7 +133,7 @@ def refresh_known_events(race_number: int) -> None:
         updated_events.append(event_info)
 
     json.dump(sorted(updated_events, key=lambda d: d['startDateTime']),
-              open(events_file, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+              events_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
     generate_html()
 
@@ -195,10 +195,9 @@ def collect_event_data(race_number: int):
         print(f'[-] Race {race["name"]} complete and results already collected')
         return
     print(f'[-] Collecting event data for {race["name"]}')
-    # Collect Complete and planned events
-    events = (find_events(datetime.fromisoformat(race['date']), race['route'], race['laps'], finished=False)
-              + find_events(datetime.fromisoformat(race['date']), race['route'], race['laps'], finished=True))
-    json.dump(events, open(event_file, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+    # Collect events
+    events = find_events(datetime.fromisoformat(race['date']), race['route'], race['laps'])
+    json.dump(events, event_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
     # Is it time to start collecting event leaderboards?
     last_event_offset = timedelta(hours=24 + Config.race_finder.allow_plus_n_hours)
@@ -226,7 +225,7 @@ def collect_event_data(race_number: int):
             # skip events if the muppet that created it de-registered and was the only rider
             continue
         results.append({event['id']: get_event_results(event['id'])})
-    json.dump(results, open(results_file, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+    json.dump(results, results_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
 
 def format_race_date(val: str):
@@ -542,7 +541,7 @@ def update_races_with_challenge():
                 race['challenge'] = challenge
     if updated:
         series_file = Path(Config.series.series_path, Files.JSON_RACES.value)
-        json.dump(races, open(series_file, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+        json.dump(races, series_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
 
 def create_user_data_json_file():
@@ -557,7 +556,7 @@ def create_user_data_json_file():
         sorted_keys = sorted(user_data, key=lambda user: user_data[user]['rouvy'].get('error', ''))
         for k in sorted_keys:
             sorted_user_data[k] = user_data[k]
-        json.dump(sorted_user_data, open(json_user_data_file, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+        json.dump(sorted_user_data, json_user_data_file.open('w', encoding='utf-8'), ensure_ascii=False, indent=2)
 
 
 def series_processing():
