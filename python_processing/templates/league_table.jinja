@@ -82,3 +82,38 @@ League table processed: {{ now().strftime('%Y-%m-%d %H:%M:%S') }} UTC
     <a href=https://www.matthias-heil.co.uk/phpbb/>discussion board</a>
     <br>
 {% endfor %}
+<br>
+<hr>
+<h2>Lanterne Rouge</h2>
+<div style="text-align:left; font-size:medium;">
+The rvy_racing take on the TDF Lanterne Rouge to honour the last in the general classification who didn't abandon the race.<br>
+To make it into the rvy_racing Lanterne Rouge table you need to be last, complete the race and get at least 1 point
+    in the rvy_racing round.
+</div>
+<br>
+<table style="border-spacing:10px; width:60%; background-color:white;">
+    <tr style="background-color:yellow;">
+        <th>Rank</th>
+        <th>Flag</th>
+        <th>Rouvy username</th>
+        <th>First name</th>
+        <th>Surname</th>
+        <th>YOB</th>
+        <th>Gender</th>
+        <th>Points</th>
+    </tr>
+    {% for result in lanterne_rouge %}
+        <tr>
+            <td>{{ result.rank }}</td>
+            <td><img src="./images/flags/4x3/{{ result.countryCode|lower }}.svg"
+                     alt="{{ result.countryCode|upper|e }}" height="14"></td>
+            <td>{{ result.userName }}</td>
+            <td>{{ result.rvy_fname }}</td>
+            <td>{{ result.rvy_sname }}</td>
+            <td>{{ result.rvy_yob }}</td>
+            <td>{{ result.rvy_gender }}</td>
+            <td>{{ result.lanterne_rouge_points }}</td>
+        </tr>
+    {% endfor %}
+</table>
+<br>
