@@ -203,6 +203,7 @@ def collect_event_data(race_number: int):
     # Is it time to start collecting event leaderboards?
     last_event_offset = timedelta(hours=24 + Config.race_finder.allow_plus_n_hours)
     last_event_date = datetime.fromisoformat(race['date']) + last_event_offset
+    last_event_date = last_event_date.replace(tzinfo=timezone.utc)
 
     # If we are < 1 hour past the start time of the last possible event return
     if datetime.now(timezone.utc) < (last_event_date + timedelta(hours=1)):
