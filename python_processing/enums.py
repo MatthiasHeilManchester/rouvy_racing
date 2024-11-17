@@ -61,6 +61,7 @@ class Files(Enum):
     JSON_RACE_LEADERBOARD = "leaderboard.json"
     JSON_SERIES_LEADERBOARD = "series_leaderboard.json"
     JSON_ISO3166_1_LEADERBOARD = "iso3166_1_leaderboard.json"
+    JSON_LANTERNE_ROUGE_LEADERBOARD = "lanterne_rouge_leaderboard.json"
     JSON_EVENTS = "events.json"
     JSON_RESULTS = "results.json"
 
