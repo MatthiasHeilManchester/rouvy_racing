@@ -1,12 +1,12 @@
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import series_prcessing
 
 
 def log_text(s: str):
     logfile = Path('php_triggered_python.log')
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     with logfile.open('a', encoding='utf-8') as f:
         f.write(f"{now}\t{s}\n")
 
