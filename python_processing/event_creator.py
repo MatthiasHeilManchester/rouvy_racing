@@ -101,25 +101,26 @@ def create_race(race_number: int, test_mode: bool = False):
 
 if __name__ == '__main__':
     # Create a set of races based on the config...
-    # create_race(13, test_mode=True)
+    #create_race(4, test_mode=True)
+    create_race(16, test_mode=False)
 
     # Or
 
     ################################################################
     # Create a single race
     ################################################################
-    race_name = 'Test Race 🦄'
-    race_date: datetime = datetime.fromisoformat('2024-09-24T07:00')
-    route_id = 66132
-    laps = 1
-    test_mode = False
+    #race_name = 'Test Race 🦄'
+    #race_date: datetime = datetime.fromisoformat('2024-09-24T07:00')
+    #route_id = 66132
+    #laps = 1
+    #test_mode = False
     ################################################################
 
-    tz = Config.series.official_race_timezone
-    utc_offset = -1 * int(tz.utcoffset(race_date).total_seconds() / 60)
-    result = post_race_to_rouvy(route_id=route_id,
-                                race_date=race_date,
-                                offset_minutes=utc_offset,
-                                race_name=race_name,
-                                laps=laps,
-                                test_mode=test_mode)
+    #tz = Config.series.official_race_timezone
+    #utc_offset = -1 * int(tz.utcoffset(race_date).total_seconds() / 60)
+    #result = post_race_to_rouvy(route_id=route_id,
+    #                            race_date=race_date,
+    #                            offset_minutes=utc_offset,
+    #                            race_name=race_name,
+    #                            laps=laps,
+    #                            test_mode=test_mode)

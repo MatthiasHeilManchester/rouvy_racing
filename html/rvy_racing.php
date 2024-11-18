@@ -124,13 +124,14 @@ updated.
     Steven Brown</a> during a rewrite required to accommodate
     <a href="https://www.rouvy.com">Rouvy</a>'s changes of their webpages.
     <br><br>
-    We're currently doing the Summer Series 24 (from
-    May-September) with one race per week (on Wednesdays).
+    We're currently doing the Winter Series 24-25 (from
+    October-March) with two races per week (on Wednesdays and Saturdays).
     The final league tables from the previous seasons have now been archived:
     <ul>
       <li><a href="../rvy_racing_archived_seasons/rvy_racing_winter_22-23/league_table.html">Winter 22-23</a> </li>
       <li><a href="../rvy_racing_archived_seasons/rvy_racing_summer_23/league_table.html">Summer 23</a> </li>
       <li><a href="../rvy_racing_archived_seasons/rvy_racing_winter_23-24/league_table.html">Winter 23-24</a> </li>
+      <li><a href="../rvy_racing_archived_seasons/rvy_racing_summer_24/league_table.html">Summer 24</a> </li>
     </ul>
     If you're interested in joining our race series, please register
     on our <a href="https://www.matthias-heil.co.uk/phpbb/">phpBB
@@ -336,6 +337,18 @@ are a few rules anyway.
 
   <h1>Rvy Racing: The races</h1>
 
+  Nov 15th 2024: Sorry! The latest update to the rouvy webpage has temporarily
+    broken the machinery we use to list races and to update the
+  league table. You can find the upcoming races here:
+  <br>
+    <center>
+      <a href="https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming">https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming</a>
+       </center>
+<br>
+    The league table will be updated as soon as possible. In the
+      meantime keep racing. Hard!
+<hr>
+
 <?php readfile("./generated/all_races_in_series.html"); ?>
 
 </div>
@@ -346,6 +359,15 @@ are a few rules anyway.
   
   <h1>Rvy Racing: The league table</h1>
 
+ Nov 15th 2024: Sorry! The latest update to the rouvy webpage has temporarily broken the machinery we use to list races and to update the league table. You can find the upcoming races here: 
+  <br>
+    <center>
+      <a href="https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming">https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming</a>
+       </center>
+<br>
+    The league table will be updated as soon as possible. In the
+      meantime keep racing. Hard!
+<hr>
 
 <hr>
 <div id="head_to_head_div">
