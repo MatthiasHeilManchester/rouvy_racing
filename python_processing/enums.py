@@ -54,6 +54,19 @@ class HTTPMethod(Enum):  # This exists in Python 3.11+
 
 
 @enum.unique
+class Files(Enum):
+    JSON_USER_DATA = "user_data.json"
+    JSON_ROUTE = "route.json"
+    JSON_RACES = "races.json"
+    JSON_RACE_LEADERBOARD = "leaderboard.json"
+    JSON_SERIES_LEADERBOARD = "series_leaderboard.json"
+    JSON_ISO3166_1_LEADERBOARD = "iso3166_1_leaderboard.json"
+    JSON_LANTERNE_ROUGE_LEADERBOARD = "lanterne_rouge_leaderboard.json"
+    JSON_EVENTS = "events.json"
+    JSON_RESULTS = "results.json"
+
+
+@enum.unique
 class RouvyEventType(Enum):
     RACE = 'RACE'
     GROUP_RIDE = 'GROUP_RIDE'

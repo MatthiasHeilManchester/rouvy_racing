@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta
 from pathlib import Path
 from config import Config, Constants
 from csv import DictReader
 from requests import Response
-from common import nice_request
+from common import nice_request, remix_parse
 """
 Here we collect json data from Rouvy, and return it for additional processing
 """
@@ -11,10 +10,15 @@ Here we collect json data from Rouvy, and return it for additional processing
 
 def get_challenges() -> list:
     """
-    Collect current and planned challenges from Rouvy.
+    Collect Ongoing, Upcoming, Joined and Finished challenges from Rouvy.
     :return: A list of challenges.
     """
-    challenge_types: list = ['actual', 'planned', 'open']
+    # Depending on whom the request is being performed by, we may need to search all 4 options
+    # Ongoing  == actual
+    # Upcoming == planned
+    # Joined   == open
+    # Finished == finished
+    challenge_types: list = ['actual', 'planned', 'open', 'finished']
     challenge_list: list = list()
     for challenge_type in challenge_types:
         url = (f"https://riders.rouvy.com/challenges/status/{challenge_type}"
@@ -51,14 +55,15 @@ def get_event_info(event_id: str) -> dict:
     :param event_id: The ID of the event.
     :return: Event information.
     """
-    url = f"https://riders.rouvy.com/events/{event_id}?_data=routes/_main.events_.$id"
+    # Updated for RemixJS
+    route = "events_.$id" # filter the data a little
+    url = f"https://riders.rouvy.com/events/{event_id}.data?_routes=routes/_main.{route}"
     result: Response = nice_request(url=url)
-    race_info: dict = result.json()
+    remix_data: dict = remix_parse(result.text)
+    race_info: dict = remix_data["routes/_main.events_.$id"]["data"]
     # Remove unneeded bloat
     race_info.pop('pageMeta', None)
-    race_info.get('event', dict()).pop('legacyRoute', None)  # Hope we never need this
     race_info.get('event', dict()).get('route', dict()).pop('geometry', None)
-    race_info.get('event', dict()).get('route', dict()).pop('thumbnails', None)
     race_info.get('event', dict()).get('route', dict()).pop('videoPreview', None)
     return race_info['event']
 

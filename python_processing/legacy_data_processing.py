@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from config import Config
+from enums import Files
 """
 Quick dirty hack to generate leaderboard.json files for the Events lost in the Rouvy site update
 Paths are hard coded, you may need to check / change them
@@ -22,7 +23,7 @@ RESULT_NAME_MAP = {'Rank': 'aggPosition',
 
 
 def parse_result_table(race: str, rt: bs4.BeautifulSoup) -> list:
-    user_file = Path(Config.series.series_path, f'user_data.json')
+    user_file = Path(Config.series.series_path, Files.JSON_USER_DATA.value)
     users: dict = json.load(user_file.open(mode='r', encoding='utf-8'))
 
     thead = rt.find("tr")
@@ -96,7 +97,7 @@ def get_race_results(race: str):
     # Get the result_table, currently only one table on the page / it is the first table
     rt = soup.find("table")
     result_data = parse_result_table(race, rt)
-    agg_file = f"../master_race_data/rvy_racing-2024-05/{race}/leaderboard.json"
+    agg_file = f"../master_race_data/rvy_racing-2024-05/{race}/{Files.JSON_RACE_LEADERBOARD.value}"
     with open(agg_file, 'w', encoding='utf-8') as f:
         json.dump(result_data, f, ensure_ascii=False, indent=2)
 
