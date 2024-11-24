@@ -337,7 +337,8 @@ are a few rules anyway.
 
   <h1>Rvy Racing: The races</h1>
 
-  Nov 15th 2024: Sorry! The latest update to the rouvy webpage has temporarily
+  <!-- -->
+  Nov 24th 2024: Sorry! The latest update to the rouvy webpage has temporarily
     broken the machinery we use to list races and to update the
   league table. You can find the upcoming races here:
   <br>
@@ -348,6 +349,7 @@ are a few rules anyway.
     The league table will be updated as soon as possible. In the
       meantime keep racing. Hard!
 <hr>
+<!-- -->
 
 <?php readfile("./generated/all_races_in_series.html"); ?>
 
@@ -359,7 +361,8 @@ are a few rules anyway.
   
   <h1>Rvy Racing: The league table</h1>
 
- Nov 15th 2024: Sorry! The latest update to the rouvy webpage has temporarily broken the machinery we use to list races and to update the league table. You can find the upcoming races here: 
+  <!-- -->
+ Nov 24th 2024: Sorry! The latest update to the rouvy webpage has temporarily broken the machinery we use to list races and to update the league table. You can find the upcoming races here: 
   <br>
     <center>
       <a href="https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming">https://riders.rouvy.com/events/search?searchQuery=rvy_racing&dateRange=upcoming</a>
@@ -368,6 +371,7 @@ are a few rules anyway.
     The league table will be updated as soon as possible. In the
       meantime keep racing. Hard!
 <hr>
+<!-- -->
 
 <hr>
 <div id="head_to_head_div">
