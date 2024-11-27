@@ -147,7 +147,17 @@ def __parse_remix_node(node_id: int, remix_data: json) -> dict:
     :param remix_data: RemixJS data
     :return: Dictionary
     """
+    # Looks like -5 is null
     parsed_dict: dict = dict()
+    if node_id == -5:
+        print(node_id)
+        parsed_dict = None
+        return parsed_dict
+    # Know idea if any other special values
+    if node_id < 0:
+        print(f"*** Negitave NodeID found: {node_id} please let me know ***")
+        parsed_dict = {"Negative Node": node_id}
+        return parsed_dict
     node_data = remix_data[node_id]
     assert type(node_data) is dict, f'NodeData not dict: {node_data}'
     for k, v in node_data.items():
