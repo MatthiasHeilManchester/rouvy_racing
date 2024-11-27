@@ -49,6 +49,10 @@ def nice_request(url: str, method: HTTPMethod = HTTPMethod.GET, payload=None) ->
         if status_code in okay_enough:
             break
 
+    attempt:dict = {1:'2nd', 2:'3rd'} # Yes this will sound dumb on the "21th" attempt, but let's not try that many.
+    if retry > 0 and status_code in okay_enough:
+        print(f"[*] That was lucky, it worked on the {attempt.get(retry, str(retry+1) + 'th')} attempt")
+
     if status_code not in okay_enough:
         print(f'[X] Request failed with status {status_code} {response.reason}')
         print(f'    Request body {response.request.body}')
