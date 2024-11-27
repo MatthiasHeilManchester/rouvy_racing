@@ -227,8 +227,8 @@ if __name__ == '__main__':
     # Some tests for future me
     # At some point Rouvy will likely kill off the old json api calls
     #######################################################################
-    # route = "events_.$id"
-    # url = f"https://riders.rouvy.com/events/20cefe5e-ddf6-4729-a16e-cc9c03011f82/leaderboard.data?_routes=routes/_main.{route}"
+    # route = "events_.$id" <- this is the wrong node for the leaderboard
+    # url = f"https://riders.rouvy.com/events/041c2d52-1230-4f82-be89-fb6abdec970f/leaderboard.data"#?_routes=routes/_main.{route}"
     # result = nice_request(url=url)
     # remix_data = remix_parse(result.text, True)
     #
