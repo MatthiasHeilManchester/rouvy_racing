@@ -49,6 +49,10 @@ def nice_request(url: str, method: HTTPMethod = HTTPMethod.GET, payload=None) ->
         if status_code in okay_enough:
             break
 
+    attempt:dict = {1:'2nd', 2:'3rd'} # Yes this will sound dumb on the "21th" attempt, but let's not try that many.
+    if retry > 0 and status_code in okay_enough:
+        print(f"[*] That was lucky, it worked on the {attempt.get(retry, str(retry+1) + 'th')} attempt")
+
     if status_code not in okay_enough:
         print(f'[X] Request failed with status {status_code} {response.reason}')
         print(f'    Request body {response.request.body}')
@@ -143,7 +147,17 @@ def __parse_remix_node(node_id: int, remix_data: json) -> dict:
     :param remix_data: RemixJS data
     :return: Dictionary
     """
+    # Looks like -5 is null
     parsed_dict: dict = dict()
+    if node_id == -5:
+        print(node_id)
+        parsed_dict = None
+        return parsed_dict
+    # Know idea if any other special values
+    if node_id < 0:
+        print(f"*** Negitave NodeID found: {node_id} please let me know ***")
+        parsed_dict = {"Negative Node": node_id}
+        return parsed_dict
     node_data = remix_data[node_id]
     assert type(node_data) is dict, f'NodeData not dict: {node_data}'
     for k, v in node_data.items():
@@ -213,8 +227,8 @@ if __name__ == '__main__':
     # Some tests for future me
     # At some point Rouvy will likely kill off the old json api calls
     #######################################################################
-    # route = "events_.$id"
-    # url = f"https://riders.rouvy.com/events/20cefe5e-ddf6-4729-a16e-cc9c03011f82/leaderboard.data?_routes=routes/_main.{route}"
+    # route = "events_.$id" <- this is the wrong node for the leaderboard
+    # url = f"https://riders.rouvy.com/events/041c2d52-1230-4f82-be89-fb6abdec970f/leaderboard.data"#?_routes=routes/_main.{route}"
     # result = nice_request(url=url)
     # remix_data = remix_parse(result.text, True)
     #

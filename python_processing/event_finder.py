@@ -34,8 +34,20 @@ def find_events(race_date: datetime, route_id: str, laps: int) -> list:
            f"dateFrom={date_from}&"
            f"dateTo={date_to}&"
            f"_routes=routes/_main.{route}")
-    result = nice_request(url=url)
-    remix_data = remix_parse(result.text)
+    remix_data = dict()
+    search_retry = 3
+    for retry in range(search_retry+1):
+        result = nice_request(url=url)
+        remix_data = remix_parse(result.text)
+        x = remix_data.get(f'routes/_main.{route}', {}).get('data',{}).get('events', None)
+        if x is not None:
+            print('[*] Results found')
+            break
+        if retry < search_retry:
+            print(f'[X] Missing search results, attempting to retry {retry+1}')
+        else:
+            print(f'[X] Search failed, result:\n{result.text}')
+            exit(1)
 
     for event in remix_data[f'routes/_main.{route}']['data']['events']:
         event_start: datetime = json_date_to_datetime(event['startDateTime'])
