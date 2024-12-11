@@ -353,7 +353,12 @@ def generate_league_table_html(day_filter: IsoDow = IsoDow.ALL, month_filter: Ra
     if day_filter != IsoDow.ALL:
         all_race_file = Path(Config.series.gen_html_path, f'league_table_{day_filter}.html')
     elif month_filter != RaceMonth.ALL:
-        year = datetime.fromisoformat(template_data['races'][0]['date']).year
+        # This is a total mess. TODO: have good look at how month, day, all files are processed.
+        year = 1000
+        for race in template_data['races']:
+            if  datetime.fromisoformat(race['date']).month == month_filter:
+                year = datetime.fromisoformat(race['date']).year
+                break
         all_race_file = Path(Config.series.gen_html_path, f'watt_monster_{year}_{month_filter.value:02}_{month_filter}.html')
     else:
         all_race_file = Path(Config.series.gen_html_path, 'league_table.html')
