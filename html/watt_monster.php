@@ -13,9 +13,10 @@
 
 <?php
 $load_file = '';
-if (isset($_GET['month'])) {
+if (isset($_GET['month']) && isset($_GET['year'])) {
     $month = (int)$_GET['month'];
-    $file_glob = './generated/watt_monster_*_' . sprintf('%02d', $month) . '_*.html';
+    $year = (int)$_GET['year'];
+    $file_glob = './generated/watt_monster_'. $year .'_' . sprintf('%02d', $month) . '_*.html';
     $result_file_list = glob($file_glob);
     if (count($result_file_list) == 1) {
         $load_file = $result_file_list[0];
