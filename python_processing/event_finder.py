@@ -1,5 +1,6 @@
 from config import Config
 from datetime import datetime, timedelta
+import time
 from collector_json import get_event_info
 from common import json_date_to_datetime, nice_request, remix_parse
 from enums import RouvyEventType, RouvyEventOrganizer, RouvyEventStatus
@@ -35,7 +36,7 @@ def find_events(race_date: datetime, route_id: str, laps: int) -> list:
            f"dateTo={date_to}&"
            f"_routes=routes/_main.{route}")
     remix_data = dict()
-    search_retry = 3
+    search_retry = 6
     for retry in range(search_retry+1):
         result = nice_request(url=url)
         remix_data = remix_parse(result.text)
@@ -44,7 +45,8 @@ def find_events(race_date: datetime, route_id: str, laps: int) -> list:
             print('[*] Results found')
             break
         if retry < search_retry:
-            print(f'[X] Missing search results, attempting to retry {retry+1}')
+            print(f'[X] Missing search results, will attempt retry {retry+1} after a 30s sleep')
+            time.sleep(30)
         else:
             print(f'[X] Search failed, result:\n{result.text}')
             exit(1)

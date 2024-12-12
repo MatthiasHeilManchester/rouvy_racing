@@ -94,7 +94,7 @@ echo "<script defer type='text/javascript'>
           $year = $matches[2];
           $month_num = (int)$matches[3];
           $month_name = $matches[4];
-          echo "<li style=\"margin-left:50px; text-align:left;\"><a href=\"watt_monster.php?month=".$month_num."\">".$month_name." ".$year."</a></li>";
+          echo "<li style=\"margin-left:50px; text-align:left;\"><a href=\"watt_monster.php?month=".$month_num."&year=".$year."\">".$month_name." ".$year."</a></li>";
       }
       echo "</ul>";
       ?>
