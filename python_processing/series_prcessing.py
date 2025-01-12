@@ -398,14 +398,15 @@ def create_race_leaderboard(race_number: int):
     best_results = list()
     rider_check = list()
     agg_position = 1
-    for x in sorted(agg_results, key=lambda d: float(d['timeSeconds']) if float(d['timeSeconds']) != 0 else 1e999):
+    # account for Rouvy Muppets losing the finish times
+    for x in sorted(agg_results, key=lambda d: d['timeSeconds'] if d['userSessionStatus'] == 'finished' and float(d['timeSeconds']) != 0 else 1e100 if d['userSessionStatus'] == 'finished' else 1e101):
         if x['userName'] in rider_check or x['userName'] not in users:
             continue
         rider_check.append(x['userName'])
         x['aggPosition'] = agg_position
         points = 0
-        # Allocate points for the rank
-        if x["userSessionStatus"] == 'finished' and len(POINTS) > agg_position:
+        # Allocate points for the rank and account for Rouvy Muppets losing the finish times.
+        if x["userSessionStatus"] == 'finished' and len(POINTS) > agg_position and x["timeSeconds"] > 0:
             points = POINTS[agg_position-1]
 
         agg_position += 1
