@@ -34,6 +34,7 @@ def nice_request(url: str, method: HTTPMethod = HTTPMethod.GET, payload=None) ->
     for retry in range(0, Constants.REQUEST_RETRY_LIMIT + 1):
         if retry > 0:
             print(f'[?] Request failed with status {status_code} {response.reason} attempting retry {retry}')
+            print(f'             URL {url}')
             print(f'    Request body {response.request.body}')
             print(f'    Response raw {response.text}')
             sleep(Constants.REQUEST_RETRY_DELAY * retry)
