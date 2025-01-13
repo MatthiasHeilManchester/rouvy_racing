@@ -18,7 +18,7 @@ def get_challenges() -> list:
     # Upcoming == planned
     # Joined   == open
     # Finished == finished
-    challenge_types: list = ['actual', 'planned', 'open', 'finished']
+    challenge_types: list = ['open', 'available', 'finished'] # ['actual', 'planned', 'open', 'finished']
     challenge_list: list = list()
     for challenge_type in challenge_types:
         url = (f"https://riders.rouvy.com/challenges/status/{challenge_type}"
